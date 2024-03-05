@@ -1,0 +1,44 @@
+@mixin light {
+  --bg0:  #fff8ff;
+  --bg1:  #fff8ff;
+  --bg2:  #fff8ff;
+  --bd:   transparent;
+  --code: #333;
+  @include ansi-light();
+  .code {
+    @include ansi-dark();
+  }
+}
+@mixin dark {
+  --bg0:  #2a222a;
+  --bg1:  transparent;
+  --bg2:  #3b333b;
+  --bd:   #4c444c;
+  --code: #ddd;
+  @include ansi-dark();
+  .code {
+    @include ansi-light();
+  }
+}
+@mixin ansi-light {
+  --ansi0: rgb(12,  12,  12 );
+  --ansi1: rgb(205, 49,  49 );
+  --ansi2: rgb(13,  188, 121);
+  --ansi3: rgb(229, 229, 16 );
+  --ansi4: rgb(36,  114, 200);
+  --ansi5: rgb(188, 63,  188);
+  --ansi6: rgb(17,  168, 205);
+  --ansi7: rgb(229, 229, 229);
+  color: var(--ansi0);
+}
+@mixin ansi-dark {
+  --ansi0: rgb(102, 102, 102);
+  --ansi1: rgb(241, 76,  76 );
+  --ansi2: rgb(35,  209, 139);
+  --ansi3: rgb(245, 245, 67 );
+  --ansi4: rgb(59,  142, 234);
+  --ansi5: rgb(214, 112, 214);
+  --ansi6: rgb(41,  184, 219);
+  --ansi7: rgb(229, 229, 229);
+  color: var(--ansi7);
+}
