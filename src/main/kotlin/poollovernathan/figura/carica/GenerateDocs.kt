@@ -74,8 +74,13 @@ val canonVars = mapOf(
 }
 
 internal fun BODY.generateDocs() {
-    FiguraAPIManager.WHITELISTED_CLASSES.map(Class<*>::kotlin).pairWith { it.findAnnotation<LuaTypeDoc>() }
-        .liftSecondNull()/*.sortedBy { it.second.name }*/.shuffled().forEach { (k, td) ->
+    FiguraAPIManager.WHITELISTED_CLASSES
+        .map(Class<*>::kotlin)
+        .pairWith { it.findAnnotation<LuaTypeDoc>() }
+        .liftSecondNull()
+        // .sortedBy { it.second.name }
+        .shuffled()
+        .forEach { (k, td) ->
             div("sect") {
                 val members: List<Either<Pair<KProperty1<*, *>, LuaFieldDoc>, Pair<KFunction<*>, LuaMethodDoc>>> = mutableListOf<Either<Pair<KProperty1<*, *>, LuaFieldDoc>, Pair<KFunction<*>, LuaMethodDoc>>>().apply {
                     k.declaredMemberProperties.forEach {
