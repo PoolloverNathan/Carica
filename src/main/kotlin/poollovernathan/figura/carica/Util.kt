@@ -69,6 +69,7 @@ inline fun HttpExchange.display404() = replyWith(404) {
 
 @Suppress("SpellCheckingInspection", "NOTHING_TO_INLINE")
 inline fun HEAD.stdhead() {
+    meta(charset = "utf-8")
     // link("localhost", "preconnect")
     // link("/@/Miracode.ttf", "preload")
     link("/@/styles.css", "stylesheet") {
@@ -108,3 +109,11 @@ inline val Method.modifierSet get() = ModifierSet(modifiers)
 inline fun <K, V> Map<K, V>.runForEach(f: Map.Entry<K, V>.() -> Unit) = forEach(f)
 inline fun <K> K.foundIn(map: Map<K, Any>) = map[this] != null
 inline fun <K, V> K.getFrom(map: Map<K, V>): V? = map[this]
+inline fun FlowOrMetaDataOrPhrasingContent.scriptText(code: String) {
+    assert(!code.contains("</script>")) { "code contains closing script tag" }
+    script {
+        unsafe {
+            +code
+        }
+    }
+}

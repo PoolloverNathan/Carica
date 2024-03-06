@@ -74,73 +74,75 @@ val canonVars = mapOf(
 }
 
 internal fun BODY.generateDocs() {
-    FiguraAPIManager.WHITELISTED_CLASSES
-        .map(Class<*>::kotlin)
-        .pairWith { it.findAnnotation<LuaTypeDoc>() }
-        .liftSecondNull()
-        // .sortedBy { it.second.name }
-        .shuffled()
-        .forEach { (k, td) ->
-            div("sect") {
-                val members: List<Either<Pair<KProperty1<*, *>, LuaFieldDoc>, Pair<KFunction<*>, LuaMethodDoc>>> = mutableListOf<Either<Pair<KProperty1<*, *>, LuaFieldDoc>, Pair<KFunction<*>, LuaMethodDoc>>>().apply {
-                    k.declaredMemberProperties.forEach {
-                        it.takeIf { it.javaField != null }?.findAnnotation<LuaFieldDoc>()?.let { an ->
-                            add(Either.makeLeft(it to an))
+    main {
+        FiguraAPIManager.WHITELISTED_CLASSES
+            .map(Class<*>::kotlin)
+            .pairWith { it.findAnnotation<LuaTypeDoc>() }
+            .liftSecondNull()
+            // .sortedBy { it.second.name }
+            .shuffled()
+            .forEach { (k, td) ->
+                div("sect") {
+                    val members: List<Either<Pair<KProperty1<*, *>, LuaFieldDoc>, Pair<KFunction<*>, LuaMethodDoc>>> = mutableListOf<Either<Pair<KProperty1<*, *>, LuaFieldDoc>, Pair<KFunction<*>, LuaMethodDoc>>>().apply {
+                        k.declaredMemberProperties.forEach {
+                            it.takeIf { it.javaField != null }?.findAnnotation<LuaFieldDoc>()?.let { an ->
+                                add(Either.makeLeft(it to an))
+                            }
+                        }
+                        k.declaredMemberFunctions.forEach {
+                            it.findAnnotation<LuaMethodDoc>()?.let { an ->
+                                add(Either.makeRight(it to an))
+                            }
+                        } // sortBy { it.foldIndifferent { it.first.name } }
+                        shuffle()
+                    }
+                    id = td.name
+                    div("jumpbar") {
+                        ul {
+                            members.forEach {
+                                li {
+                                    a("#${td.name}.${it.foldIndifferent { it.first.name }}") {
+                                        +it.foldIndifferent { it.first.name }
+                                    }
+                                }
+                            }
                         }
                     }
-                    k.declaredMemberFunctions.forEach {
-                        it.findAnnotation<LuaMethodDoc>()?.let { an ->
-                            add(Either.makeRight(it to an))
+                    h1 {
+                        a("#${td.name}") {
+                            +td.name
                         }
-                    } // sortBy { it.foldIndifferent { it.first.name } }
-                    shuffle()
-                }
-                id = td.name
-                div("jumpbar") {
-                    ul {
+                    }
+                    Language.getInstance().getOrDefault("figura.docs." + td.value).split("\n").forEach {
+                        p {
+                            +it
+                        }
+                    }
+                    div("pane pane1") {
                         members.forEach {
-                            li {
-                                a("#${td.name}.${it.foldIndifferent { it.first.name }}") {
-                                    +it.foldIndifferent { it.first.name }
-                                }
+                            h2 {
+                                id = "${td.name}.${it.foldIndifferent { it.first.name }}"
+                                +it.foldIndifferent { it.first.name }
                             }
-                        }
-                    }
-                }
-                h1 {
-                    a("#${td.name}") {
-                        +td.name
-                    }
-                }
-                Language.getInstance().getOrDefault("figura.docs." + td.value).split("\n").forEach {
-                    p {
-                        +it
-                    }
-                }
-                div("pane pane1") {
-                    members.forEach {
-                        h2 {
-                            id = "${td.name}.${it.foldIndifferent { it.first.name }}"
-                            +it.foldIndifferent { it.first.name }
-                        }
-                        div("pane pane2") {
-                            Language.getInstance().getOrDefault(
-                                "figura.docs." + it.fold({ it.second.value }, { it.second.value })
-                            ).split("\n").forEach {
-                                p {
-                                    +it
+                            div("pane pane2") {
+                                Language.getInstance().getOrDefault(
+                                    "figura.docs." + it.fold({ it.second.value }, { it.second.value })
+                                ).split("\n").forEach {
+                                    p {
+                                        +it
+                                    }
                                 }
-                            }
-                            div("code") {
-                                it.bimap({ it.first }, { it.first }).let {
-                                    genExamples(it)
+                                div("code") {
+                                    it.bimap({ it.first }, { it.first }).let {
+                                        genExamples(it)
+                                    }
                                 }
                             }
                         }
                     }
                 }
             }
-        }
+    }
 }
 
 fun DIV.genExamples(member: Either<KProperty1<*, *>, KFunction<*>>) {
@@ -163,7 +165,7 @@ fun DIV.genExamples(member: Either<KProperty1<*, *>, KFunction<*>>) {
             LuaMethodOverload(
                 argumentTypes = parameters.map { it.type.jvmErasure }.toTypedArray(),
                 argumentNames = parameters.map { it.name ?: "" }.toTypedArray(),
-                returnType    = returnType.jvmErasure
+                returnType    = returnType.jvmErasure.takeUnless { it.simpleName == "DEFAULT" } ?: object{}::class // this@f.returnType.jvmErasure
             )
         )).mapIndexed { i, it ->
             it.run {
